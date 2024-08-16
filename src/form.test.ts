@@ -9,6 +9,10 @@ import { FormInputText } from "./types.js";
 
 // @vitest-environment happy-dom 
 
+function normalizeWhitespace(str: string): string {
+    return str.replace(/\s+/g, ' ').trim();
+}
+
 describe("Form Test Suite", function () {
     const nonLocalizedSchema = Type.Object({
         password: Type.String({
@@ -146,81 +150,61 @@ describe("Form Test Suite", function () {
     describe("Localized Schema Tests", function () {
         const form = new Form(localizedSchema);
 
-        it("tests form generation with English labels and hints", async function () {
-            const html = form.getHTML({}, "en");
-            const valid = await validateHTML(html);
-            expect(valid).toBeTruthy();
-            const doc = parseHTML(html);
-            const tw = new TreeWalker(doc, NodeFilter.SHOW_ELEMENT);
-            
-            // Check password field
-            const passwordDiv = tw.firstChild() as unknown as HTMLElement;
-            const passwordLabel = tw.firstChild() as unknown as HTMLElement;
-            expect(passwordLabel.textContent).toBe("Password");
-            tw.nextSibling(); // Skip input
-            const passwordHint = tw.nextSibling() as unknown as HTMLElement;
-            expect(passwordHint.textContent).toBe("Must be at least 4 characters long");
-            tw.parentNode();
+        function testLocalizedForm(lang: string, expectedLabels: Record<string, string>, expectedHints: Record<string, string>) {
+            return async function () {
+                const html = form.getHTML({}, lang);
+                const valid = await validateHTML(html);
+                expect(valid).toBeTruthy();
+                const doc = parseHTML(html);
 
-            // Check username field
-            const usernameDiv = tw.nextSibling() as unknown as HTMLElement;
-            const usernameLabel = tw.firstChild() as unknown as HTMLElement;
-            expect(usernameLabel.textContent).toBe("Username");
-            tw.nextSibling(); // Skip input
-            const usernameHint = tw.nextSibling() as unknown as HTMLElement;
-            expect(usernameHint.textContent).toBe("Maximum 6 characters");
-        });
+                for (const [fieldName, expectedLabel] of Object.entries(expectedLabels)) {
+                    const labelElement = doc.querySelector(`div.${fieldName} > label[for="${fieldName}_"]`);
+                    expect(labelElement, `Label for ${fieldName} not found`).not.toBeNull();
+                    expect(normalizeWhitespace(labelElement?.textContent || "")).toBe(expectedLabel);
+                }
 
-        it("tests form generation with Spanish labels and hints", async function () {
-            const html = form.getHTML({}, "es");
-            const valid = await validateHTML(html);
-            expect(valid).toBeTruthy();
-            const doc = parseHTML(html);
-            const tw = new TreeWalker(doc, NodeFilter.SHOW_ELEMENT);
-            
-            // Check password field
-            const passwordDiv = tw.firstChild() as unknown as HTMLElement;
-            const passwordLabel = tw.firstChild() as unknown as HTMLElement;
-            expect(passwordLabel.textContent).toBe("Contraseña");
-            tw.nextSibling(); // Skip input
-            const passwordHint = tw.nextSibling() as unknown as HTMLElement;
-            expect(passwordHint.textContent).toBe("Debe tener al menos 4 caracteres");
-            tw.parentNode();
+                for (const [fieldName, expectedHint] of Object.entries(expectedHints)) {
+                    const hintElement = doc.querySelector(`div.${fieldName} > div.requirements`);
+                    expect(hintElement, `Hint for ${fieldName} not found`).not.toBeNull();
+                    expect(normalizeWhitespace(hintElement?.textContent || "")).toBe(expectedHint);
+                }
+            };
+        }
 
-            // Check username field
-            const usernameDiv = tw.nextSibling() as unknown as HTMLElement;
-            const usernameLabel = tw.firstChild() as unknown as HTMLElement;
-            expect(usernameLabel.textContent).toBe("Nombre de usuario");
-            tw.nextSibling(); // Skip input
-            const usernameHint = tw.nextSibling() as unknown as HTMLElement;
-            expect(usernameHint.textContent).toBe("Máximo 6 caracteres");
-        });
+        it("tests form generation with English labels and hints", testLocalizedForm(
+            "en",
+            {
+                email: "Email label",
+                password: "Password label"
+            },
+            {
+                email: "e.g. me@example.com",
+                password: "EN: Passwords must contain 6 or more characters."
+            }
+        ));
 
-        it("tests form generation with French labels and hints", async function () {
-            const html = form.getHTML({}, "fr");
-            const valid = await validateHTML(html);
-            expect(valid).toBeTruthy();
-            const doc = parseHTML(html);
-            const tw = new TreeWalker(doc, NodeFilter.SHOW_ELEMENT);
-            
-            // Check password field
-            const passwordDiv = tw.firstChild() as unknown as HTMLElement;
-            const passwordLabel = tw.firstChild() as unknown as HTMLElement;
-            expect(passwordLabel.textContent).toBe("Mot de passe");
-            tw.nextSibling(); // Skip input
-            const passwordHint = tw.nextSibling() as unknown as HTMLElement;
-            expect(passwordHint.textContent).toBe("Doit contenir au moins 4 caractères");
-            tw.parentNode();
+        it("tests form generation with Spanish labels and hints", testLocalizedForm(
+            "es",
+            {
+                email: "Etiqueta de correo electrónico",
+                password: "Etiqueta de contraseña"
+            },
+            {
+                email: "ej. yo@ejemplo.com",
+                password: "ES: Las contraseñas deben contener 6 o más caracteres."
+            }
+        ));
 
-            // Check username field
-            const usernameDiv = tw.nextSibling() as unknown as HTMLElement;
-            const usernameLabel = tw.firstChild() as unknown as HTMLElement;
-            expect(usernameLabel.textContent).toBe("Nom d'utilisateur");
-            tw.nextSibling(); // Skip input
-            const usernameHint = tw.nextSibling() as unknown as HTMLElement;
-            expect(usernameHint.textContent).toBe("Maximum 6 caractères");
-        });
-
-        // Add more tests for localized schema as needed
+        it("tests form generation with French labels and hints", testLocalizedForm(
+            "fr",
+            {
+                email: "Étiquette de courriel",
+                password: "Étiquette de mot de passe"
+            },
+            {
+                email: "ex. moi@exemple.com",
+                password: "FR: Les mots de passe doivent contenir 6 caractères ou plus."
+            }
+        ));
     });
 });
