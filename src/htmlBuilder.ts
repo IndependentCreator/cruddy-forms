@@ -50,25 +50,24 @@ export class HTMLBuilder<T extends TObject> {
     /** Generate HTML from the given ElementData object. */
     static getElementHTML( data: ElementData, values: Map<string, string> ) {
         // Start the element.
-        let html = `<${ data.element } class="${ data.inputType }-input"`;
+        let html = `<${data.element} class="${data.name}"`;
 
         // Add attributes.
         for ( const [ key, value ] of data.stringAttributes.entries() ) {
             if ( key.toLowerCase() !== "checked" ) {
-                html += ` ${ key.toLowerCase() }="${ value }"`;
+                html += ` ${key.toLowerCase()}="${value}"`;
             }
         }
 
         // Add boolean attributes.
         for ( const attribute of data.booleanAttributes ) {
-            html += ` ${ attribute }`;
+            html += ` ${attribute}`;
         }
 
         // Write the element value and close the element.
         if ( data.element === "input" && data.inputType === "checkbox" ) {
             const name = data.stringAttributes.get("name");
             if (name) {
-                // TODO - can we use data here instead of values?
                 const checked = values.get(name) === "true" ? " checked" : "";
                 html += checked;
             }
@@ -83,13 +82,13 @@ export class HTMLBuilder<T extends TObject> {
         if ( data.element === "textarea" ) {
             // Get the default content, if any, from the value of the "name" field.
             const name = data.stringAttributes.get("name");
-            // TODO - can we use data here instead of values?
             const content = name ? values.get(name) || "" : "";
             html += `${content}</textarea>`;
         }
 
         return html;
     }
+
 
     static getErrorsHTML( errorMessage: string, errorDetails: string[] ) {
 

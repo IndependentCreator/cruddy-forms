@@ -79,12 +79,14 @@ Error 2</li>
 </ul>
 </div>` );
         } );
-        it( "test getElementHTML()", async function() {
-            const html = HTMLBuilder.getElementHTML( data, new Map<string, string>() );
-            expect( html ).toBe( "<input class=\"text-input\" type=\"text\" required>" );
-            const valid = await validateHTML( html );
-            expect( valid ).toBeTruthy();
-        } );
+
+        it("test getElementHTML()", async function() {
+            const html = HTMLBuilder.getElementHTML(data, new Map<string, string>());
+            expect(html).toBe('<input class="name1" type="text" required>');
+            const valid = await validateHTML(html);
+            expect(valid).toBeTruthy();
+        });
+
 
         it ( "test getHintHTML()", async function() {
             const html = HTMLBuilder.getHintHTML( "The hint" );
@@ -115,15 +117,15 @@ Error 2</li>
             expect( html ).toBe( "<form action=\"http//z.co\" class=\"normform form-class\" id=\"form-id\" novalidate method=\"post\">" );
         } );
 
-        it( "test getElementHTML() extra attributes", async function() {
-            data.stringAttributes.set( "data-msg", "hi" );
-            data.stringAttributes.set( "value", "the value" );
-            data.booleanAttributes.push( "data-bool" );
-            const html = HTMLBuilder.getElementHTML( data, new Map<string, string>() );
-            expect( html ).toBe( "<input class=\"text-input\" type=\"text\" data-msg=\"hi\" value=\"the value\" required data-bool>" );
-            const valid = await validateHTML( html );
-            expect( valid ).toBeTruthy();
-        } );
+        it("test getElementHTML() extra attributes", async function() {
+            data.stringAttributes.set("data-msg", "hi");
+            data.stringAttributes.set("value", "the value");
+            data.booleanAttributes.push("data-bool");
+            const html = HTMLBuilder.getElementHTML(data, new Map<string, string>());
+            expect(html).toBe('<input class="name1" type="text" data-msg="hi" value="the value" required data-bool>');
+            const valid = await validateHTML(html);
+            expect(valid).toBeTruthy();
+        });
 
         it ( "test getElementHTMLAfter()", async function () {
             // text inputs get no extra html before
