@@ -33,6 +33,106 @@ export function parseHTML( html: string ) {
 
 describe( "test html creation functions", function () {
     const booleanAttributes = new Array<string>();
+
+    describe( "Internationalization Tests", function () {
+        const i18nSchema = Type.Object( {
+            username: Type.String( {
+                element: "input",
+                endpoint: {
+                    en: "/api/validate/username",
+                    es: "/es/api/validar/nombre-usuario"
+                },
+                hint: {
+                    en: "Enter your username",
+                    es: "Ingrese su nombre de usuario"
+                },
+                inputType: "text",
+                label: {
+                    en: "Username",
+                    es: "Nombre de usuario"
+                },
+                placeholder: {
+                    en: "Your username",
+                    es: "Su nombre de usuario"
+                }
+            } satisfies FormInputText )
+        } );
+
+        it( "should throw an error when lang is not provided for internationalized schema", function () {
+            const builder = new HTMLBuilder( i18nSchema );
+            expect( () => builder.getElementDataFromSchema() ).toThrow( "Language must be specified for internationalized schema" );
+        } );
+
+        it( "should use English localized values when lang is 'en'", function () {
+            const builder = new HTMLBuilder( i18nSchema );
+            const data = builder.getElementDataFromSchema( "en" );
+            expect( data.length ).toBe( 1 );
+            const [ username ] = data;
+
+            expect( username.hint ).toBe( "Enter your username" );
+            expect( username.label ).toBe( "Username" );
+            expect( username.stringAttributes.get( "placeholder" ) ).toBe( "Your username" );
+            expect( username.stringAttributes.get( "data-endpoint" ) ).toBe( "/api/validate/username" );
+        } );
+
+        it( "should use Spanish localized values when lang is 'es'", function () {
+            const builder = new HTMLBuilder( i18nSchema );
+            const data = builder.getElementDataFromSchema( "es" );
+            expect( data.length ).toBe( 1 );
+            const [ username ] = data;
+
+            expect( username.hint ).toBe( "Ingrese su nombre de usuario" );
+            expect( username.label ).toBe( "Nombre de usuario" );
+            expect( username.stringAttributes.get( "placeholder" ) ).toBe( "Su nombre de usuario" );
+            expect( username.stringAttributes.get( "data-endpoint" ) ).toBe( "/es/api/validar/nombre-usuario" );
+        } );
+
+        it( "should throw an error when lang is not available", function () {
+            const builder = new HTMLBuilder( i18nSchema );
+            expect( () => builder.getElementDataFromSchema( "fr" ) ).toThrow( "Language 'fr' is not available in the schema" );
+        } );
+
+        it( "should handle non-internationalized schema correctly", function () {
+            const nonI18nSchema = Type.Object( {
+                email: Type.String( {
+                    element: "input",
+                    hint: "Enter your email",
+                    inputType: "email",
+                    label: "Email",
+                    placeholder: "example@domain.com"
+                } satisfies FormInputText )
+            } );
+
+            const builder = new HTMLBuilder( nonI18nSchema );
+            const data = builder.getElementDataFromSchema();
+            expect( data.length ).toBe( 1 );
+            const [ email ] = data;
+
+            expect( email.hint ).toBe( "Enter your email" );
+            expect( email.label ).toBe( "Email" );
+            expect( email.stringAttributes.get( "placeholder" ) ).toBe( "example@domain.com" );
+        } );
+
+        it( "should throw an error for mixed localized and non-localized values", function () {
+            const mixedSchema = Type.Object( {
+                email: Type.String( {
+                    element: "input",
+                    hint: "Enter your email",
+                    inputType: "email",
+                    label: {
+                        en: "Email",
+                        es: "Correo electrónico"
+                    },
+                    placeholder: "example@domain.com"
+                } satisfies FormInputText )
+            } );
+
+            const builder = new HTMLBuilder( mixedSchema );
+            expect( () => builder.getElementDataFromSchema() ).toThrow( "Mixed localized and non-localized values are not allowed" );
+            expect( () => builder.getElementDataFromSchema( "en" ) ).toThrow( "Mixed localized and non-localized values are not allowed" );
+        } );
+    } );
+
     describe( "HTMLBuilder Test Suite", function () {
 
         const stringAttributes = new Map<string, string>();
@@ -80,13 +180,12 @@ Error 2</li>
 </div>` );
         } );
 
-        it("test getElementHTML()", async function() {
-            const html = HTMLBuilder.getElementHTML(data, new Map<string, string>());
-            expect(html).toBe('<input class="name1" type="text" required>');
-            const valid = await validateHTML(html);
-            expect(valid).toBeTruthy();
-        });
-
+        it( "test getElementHTML()", async function() {
+            const html = HTMLBuilder.getElementHTML( data, new Map<string, string>() );
+            expect( html ).toBe( '<input class="name1" type="text" required>' );
+            const valid = await validateHTML( html );
+            expect( valid ).toBeTruthy();
+        } );
 
         it ( "test getHintHTML()", async function() {
             const html = HTMLBuilder.getHintHTML( "The hint" );
@@ -117,15 +216,15 @@ Error 2</li>
             expect( html ).toBe( "<form action=\"http//z.co\" class=\"normform form-class\" id=\"form-id\" novalidate method=\"post\">" );
         } );
 
-        it("test getElementHTML() extra attributes", async function() {
-            data.stringAttributes.set("data-msg", "hi");
-            data.stringAttributes.set("value", "the value");
-            data.booleanAttributes.push("data-bool");
-            const html = HTMLBuilder.getElementHTML(data, new Map<string, string>());
-            expect(html).toBe('<input class="name1" type="text" data-msg="hi" value="the value" required data-bool>');
-            const valid = await validateHTML(html);
-            expect(valid).toBeTruthy();
-        });
+        it( "test getElementHTML() extra attributes", async function() {
+            data.stringAttributes.set( "data-msg", "hi" );
+            data.stringAttributes.set( "value", "the value" );
+            data.booleanAttributes.push( "data-bool" );
+            const html = HTMLBuilder.getElementHTML( data, new Map<string, string>() );
+            expect( html ).toBe( '<input class="name1" type="text" data-msg="hi" value="the value" required data-bool>' );
+            const valid = await validateHTML( html );
+            expect( valid ).toBeTruthy();
+        } );
 
         it ( "test getElementHTMLAfter()", async function () {
             // text inputs get no extra html before
