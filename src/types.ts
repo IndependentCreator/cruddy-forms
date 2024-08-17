@@ -1,8 +1,8 @@
 export interface FormInput {
     class?: string;
-    endpoint?: string | object;
-    hint?: string | object;
-    label?: string | object;
+    endpoint?: object | string;
+    hint?: object | string;
+    label?: object | string;
 }
 
 export interface FormInputTextEditable {
@@ -10,7 +10,7 @@ export interface FormInputTextEditable {
     autocomplete?: "off" | "on";
     autocorrect?: "off" | "on";
     autofocus?: boolean;
-    placeholder?: string | object;
+    placeholder?: object | string;
     spellcheck?: "false" | "true";
     value?: string;
 }
