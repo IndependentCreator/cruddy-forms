@@ -1,9 +1,19 @@
 export class CruddyForm extends HTMLElement {
     changeHandler;
     errorValues: Map<string, string>;
+    /** Wrapper for handleChange to use with event listeners */
+    handleChangeWrapper = ( event: Event ) => {
+        void this.handleChange( event );
+    };
+    /** Wrapper for handleInput to use with event listeners */
+    handleInputWrapper = ( event: Event ) => {
+        void this.handleInput( event );
+    };
     inputHandler;
     passwordRevealHandler;
+
     requirements: Map<string, string>;
+
     requirementsNodes: Map<string, HTMLElement>;
 
     constructor() {
@@ -46,8 +56,8 @@ export class CruddyForm extends HTMLElement {
                 }
 
                 // Register listeners.
-                element.addEventListener( "input", this.inputHandler );
-                element.addEventListener( "change", this.changeHandler );
+                element.addEventListener( "input", this.handleInputWrapper );
+                element.addEventListener( "change", this.handleChangeWrapper );
             }
         } );
     }
@@ -135,6 +145,6 @@ export class CruddyForm extends HTMLElement {
             buttonShow.style.display = ( input.type === "text" ) ? "none" : "flex";
         }
     }
-
 }
+
 customElements.define( "cruddy-form", CruddyForm );
