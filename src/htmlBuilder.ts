@@ -199,7 +199,7 @@ ${ errorDetails.length > 0 ? errorDetailsList : "" }
                 return lang ? this.getLocalizedValue( value, lang ) : Object.values( value )[ 0 ];
             } else {
                 hasNonLocalizedValues = true;
-                return `${ value }`;
+                return typeof value === "string" ? value : String( value );
             }
         };
 
