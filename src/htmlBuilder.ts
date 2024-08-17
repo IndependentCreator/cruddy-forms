@@ -187,54 +187,79 @@ ${ errorDetails.length > 0 ? errorDetailsList : "" }
     private isLocalizedString( value: unknown ): value is LocalizedString {
         return typeof value === "object" && value !== null && Object.values( value ).every( v => typeof v === "string" );
     }
+
     /** Extract a list of ElementData objects from the current typebox schema. */
     getElementDataFromSchema( lang?: string ): ElementData[] {
         const elementData = new Array<ElementData>();
-        let hasLocalizedValues = false;
-        let hasNonLocalizedValues = false;
+        let schemaType: "localized" | "non-localized" | null = null;
 
-        const processValue = ( value: unknown ): string => {
-            if ( this.isLocalizedString( value ) ) {
-                hasLocalizedValues = true;
-                return lang ? this.getLocalizedValue( value, lang ) : Object.values( value )[ 0 ];
-            } else {
-                hasNonLocalizedValues = true;
-                return typeof value === "string" ? value : String( value );
+        const processValue = ( value: unknown, key: string ): string => {
+            const isLocalized = this.isLocalizedString( value );
+        
+            if ( schemaType === null ) {
+                schemaType = isLocalized ? "localized" : "non-localized";
+            } else if ( ( schemaType === "localized" && !isLocalized ) || 
+                   ( schemaType === "non-localized" && isLocalized ) ) {
+                throw new Error( "Mixed localized and non-localized values are not allowed" );
             }
+
+            if ( isLocalized ) {
+                if ( !lang ) {
+                    throw new Error( `Language must be specified for internationalized schema (${ key })` );
+                }
+
+                return this.getLocalizedValue( value as Record<string, string>, lang );
+            }
+
+            return typeof value === "string" ? value : String( value );
         };
 
         Object.entries( this.schema.properties ).forEach( ( [ name, props ] ) => {
-            let element, elementValue, hint, inputType, label;
-            let stringAttributes = new Map<string, string>();
+            let element: string | undefined;
+            let elementValue: string | undefined;
+            let hint: string | undefined;
+            let inputType: string | undefined;
+            let label: string | undefined;
+            const stringAttributes = new Map<string, string>();
             stringAttributes.set( "name", name );
         
             const id = `${ name }_${ this.options?.idSuffix ?? "" }`;
             stringAttributes.set( "id", id );
         
-            const booleanAttributes = new Array<string>();
+            const booleanAttributes: string[] = [];
             if ( this.schema.required?.includes( name ) ) {
                 booleanAttributes.push( "required" );
             }
 
             for ( const [ key, value ] of Object.entries( props ) ) {
-                if ( key === "element" ) {
-                    element = `${ value }`;
-                } else if ( key === "hint" ) {
-                    hint = processValue( value );
-                } else if ( key === "label" ) {
-                    label = processValue( value );
-                } else if ( key === "placeholder" || key === "endpoint" ) {
-                    stringAttributes.set( key === "endpoint" ? "data-endpoint" : key, processValue( value ) );
-                } else if ( key === "elementValue" ) {
-                    elementValue = `${ value }`;
-                    stringAttributes.set( "value", `${ value }` );
-                } else if ( key === "inputType" ) {
-                    inputType = `${ value }`;
-                    stringAttributes.set( "type", `${ value }` );
-                } else if ( typeof value === "boolean" && value ) {
-                    booleanAttributes.push( key );
-                } else if ( key !== "type" ) {
-                    stringAttributes.set( key, `${ value }` );
+                switch ( key ) {
+                case "element":
+                    element = String( value );
+                    break;
+                case "hint":
+                    hint = processValue( value, key );
+                    break;
+                case "label":
+                    label = processValue( value, key );
+                    break;
+                case "placeholder":
+                case "endpoint":
+                    stringAttributes.set( key === "endpoint" ? "data-endpoint" : key, processValue( value, key ) );
+                    break;
+                case "elementValue":
+                    elementValue = String( value );
+                    stringAttributes.set( "value", String( value ) );
+                    break;
+                case "inputType":
+                    inputType = String( value );
+                    stringAttributes.set( "type", String( value ) );
+                    break;
+                default:
+                    if ( typeof value === "boolean" && value ) {
+                        booleanAttributes.push( key );
+                    } else if ( key !== "type" ) {
+                        stringAttributes.set( key, String( value ) );
+                    }
                 }
             }
 
@@ -243,7 +268,7 @@ ${ errorDetails.length > 0 ? errorDetailsList : "" }
             if ( !inputType ) {throw Error( "Invalid schema - inputType is required" );}
 
             label ||= name.slice( 0, 1 ).toUpperCase() + name.slice( 1 );
-            stringAttributes = HTMLBuilder.applyDefaultAttributes( element, inputType, stringAttributes );
+            const attributesWithDefaults = HTMLBuilder.applyDefaultAttributes( element, inputType, stringAttributes );
 
             elementData.push( {
                 booleanAttributes,
@@ -254,17 +279,9 @@ ${ errorDetails.length > 0 ? errorDetailsList : "" }
                 inputType,
                 label,
                 name,
-                stringAttributes
+                stringAttributes: attributesWithDefaults
             } );
         } );
-
-        if ( hasLocalizedValues && hasNonLocalizedValues ) {
-            throw new Error( "Mixed localized and non-localized values are not allowed" );
-        }
-
-        if ( hasLocalizedValues && !lang ) {
-            throw new Error( "Language must be specified for internationalized schema" );
-        }
 
         return elementData;
     }
