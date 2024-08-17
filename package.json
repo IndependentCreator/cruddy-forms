@@ -1,6 +1,6 @@
 {
 	"name": "cruddy-forms",
-	"version": "0.0.0",
+	"version": "0.1.0-rc.0",
 	"description": "HTML Form generator with typebox validation",
 	"repository": {
 		"type": "git",
@@ -8,12 +8,12 @@
 	},
 	"license": "MIT",
 	"author": {
-        "name": "IndependentCreator",
+		"name": "IndependentCreator",
 		"email": "independentcreator@protonmail.com"
 	},
 	"type": "module",
 	"main": "./lib/index.js",
-    "types": "./lib/index.d.ts",
+	"types": "./lib/index.d.ts",
 	"files": [
 		"lib/",
 		"package.json",
@@ -21,7 +21,7 @@
 		"README.md"
 	],
 	"scripts": {
-        "build": "tsup",
+		"build": "tsup",
 		"coverage": "vitest run --coverage",
 		"format": "prettier \"**/*\" --ignore-unknown",
 		"format:write": "pnpm format --write",
@@ -34,7 +34,9 @@
 		"pack": "pnpm pack --pack-destination ~",
 		"should-semantic-release": "should-semantic-release --verbose",
 		"test": "vitest",
-		"tsc": "tsc"
+		"tsc": "tsc",
+        "release": "node scripts/release.js",
+        "release:rc": "node scripts/release.js --rc"
 	},
 	"lint-staged": {
 		"*.{ts,cjs}": "eslint"
