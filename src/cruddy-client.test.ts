@@ -66,6 +66,7 @@ describe( "CruddyForm", () => {
             global.fetch = vi.fn().mockResolvedValue( {
                 json: () => Promise.resolve( { message: "Validation error" } ),
                 status: 422,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } ) as any;
 
             await cruddy.callEndpoint( input );
