@@ -1,4 +1,4 @@
-class CruddyForm extends HTMLElement {
+export class CruddyForm extends HTMLElement {
     changeHandler;
     errorValues: Map<string, string>;
     inputHandler;
@@ -52,21 +52,17 @@ class CruddyForm extends HTMLElement {
         } );
     }
 
-    /** Make the call to the REST endpoint and display the results  */
-    callEndpoint( element: HTMLInputElement ) {
+    async callEndpoint( element: HTMLInputElement ): Promise<void> {
         const url = element.getAttribute( "data-endpoint" ) + element.value;
-        void ( async () => {
+        try {
             const response = await fetch( url );
             if ( response.status === 422 ) {
-                const requirementsNode = this.requirementsNodes.get( element.id );
-                const requirementsHTML = this.requirements.get( element.id );
-        
-                const data  = await response.json() as {message: string};
+                const data = await response.json() as { message: string };
                 if ( data.message ) {
                     element.setCustomValidity( data.message );
-                    // Save the most recent bad value for this element
                     this.errorValues.set( element.id, element.value );
-                    if ( requirementsNode && requirementsHTML ) {
+                    const requirementsNode = this.requirementsNodes.get( element.id );
+                    if ( requirementsNode ) {
                         requirementsNode.innerHTML = data.message;
                     }
 
@@ -75,15 +71,15 @@ class CruddyForm extends HTMLElement {
                     element.setCustomValidity( "" );
                 }
 
-                if ( !requirementsNode || !requirementsHTML ) {
-                    element.reportValidity();
-                }
+                element.reportValidity();
             }
-        } )();
+        } catch ( error ) {
+            console.error( "Error calling endpoint:", error );
+        }
     }
 
     /** Call the remote validator when the entered value has changed. */
-    handleChange( event: Event ) {
+    async handleChange( event: Event ) {
         if ( !( event.target instanceof HTMLInputElement ) ) {
             return;
         }
@@ -93,18 +89,18 @@ class CruddyForm extends HTMLElement {
             return;
         }
 
-        this.callEndpoint( element );
+        await this.callEndpoint( element );
     }
 
     /** Reset the error message once the user starts editing. */
-    handleInput( event: Event ) {
+    async handleInput( event: Event ) {
         if ( !( event.target instanceof HTMLInputElement ) ) {
             return;
         }
 
         event.target.setCustomValidity( "" );
         if ( event.target.value === this.errorValues.get( event.target.id ) ) {
-            this.callEndpoint( event.target );
+            await this.callEndpoint( event.target );
         }
 
         const requirementsNode = this.requirementsNodes.get( event.target.id );
@@ -114,32 +110,31 @@ class CruddyForm extends HTMLElement {
         }
     }
 
-    handlePasswordReveal( event: Event ) {
-        if ( !( event.target instanceof SVGElement ) && !( event.target instanceof HTMLElement ) ) {
+    handlePasswordReveal( event: Event ): void {
+        if ( !( event.target instanceof HTMLElement ) ) {
             return;
         }
 
-        if ( event.target.parentNode?.parentNode ) {
+        const parentNode = event.target.parentNode;
+        if ( !parentNode ) {return;}
 
-            // Find the password input and toggle it between password and text
-            const input = event.target.parentNode.parentNode.querySelector( "[type]" );
-            if ( input instanceof HTMLInputElement ) {
-                if ( input.type === "password" ) {
-                    input.type = "text";
-                } else {
-                    input.type = "password";
-                }
+        const input = parentNode.querySelector<HTMLInputElement>( "[type]" );
+        if ( !input ) {return;}
 
-                // Find the buttons for show and hide and toggle them
-                const buttonHide = event.target.parentNode.parentNode.querySelector( ".button-password-hide" );
-                const buttonShow = event.target.parentNode.parentNode.querySelector( ".button-password-show" );
-                if ( buttonHide instanceof HTMLElement && buttonShow instanceof HTMLElement ) {
-                    buttonHide.style.display = ( input.type === "text" ) ? "flex" : "none";
-                    buttonShow.style.display = ( input.type === "text" ) ? "none" : "flex";
-                }
+        if ( input.type === "password" ) {
+            input.type = "text";
+        } else {
+            input.type = "password";
+        }
 
-            }
+        const buttonHide = parentNode.querySelector<HTMLElement>( ".button-password-hide" );
+        const buttonShow = parentNode.querySelector<HTMLElement>( ".button-password-show" );
+
+        if ( buttonHide && buttonShow ) {
+            buttonHide.style.display = ( input.type === "text" ) ? "flex" : "none";
+            buttonShow.style.display = ( input.type === "text" ) ? "none" : "flex";
         }
     }
+
 }
 customElements.define( "cruddy-form", CruddyForm );
