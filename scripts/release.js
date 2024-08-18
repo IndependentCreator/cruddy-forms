@@ -50,27 +50,35 @@ function release(isReleaseCandidate) {
   
   // If everything is okay, proceed with the release
   const releaseCommand = isReleaseCandidate 
-    ? 'release-it --preRelease=rc'
-    : 'release-it';
+    ? 'release-it --preRelease=rc --no-git.changelog --no-github.release'
+    : 'release-it --no-git.changelog --no-github.release';
 
   try {
+    console.log(`Executing command: ${releaseCommand}`);
     const output = execSync(releaseCommand, { stdio: 'pipe' }).toString();
-    console.log(output);
+    console.log('Release-it output:', output);
 
     // Extract the version number from the release-it output
-    const versionMatch = output.match(/to\s+v([\d.]+)/);
+    const versionMatch = output.match(/to\s+v?(\d+\.\d+\.\d+(?:-rc\.\d+)?)/i);
     if (versionMatch && versionMatch[1]) {
       const version = versionMatch[1];
+      console.log(`Extracted version: ${version}`);
+      
       // Add a tag for the release
-      execSync(`git tag -a v${version} -m "Release ${version}"`, { stdio: 'inherit' });
+      const tagCommand = `git tag -a v${version} -m "Release ${version}"`;
+      console.log(`Executing command: ${tagCommand}`);
+      execSync(tagCommand, { stdio: 'inherit' });
       console.log(`Tagged release as v${version}`);
     } else {
-      console.warn('Could not determine version number from release output. Tag was not created.');
+      throw new Error('Could not determine version number from release output. Unable to create tag.');
     }
 
-    console.log('Release created successfully. To publish, run: npm run publish');
+    console.log('Release process completed successfully. To publish, run: npm run publish');
   } catch (error) {
     console.error('Release process failed:', error.message);
+    if (error.stderr) {
+      console.error('Error output:', error.stderr.toString());
+    }
     if (error.message.includes('No upstream configured for current branch')) {
       console.error('Please set an upstream branch for your current branch.');
       console.error('You can do this by running: git push -u origin main');
