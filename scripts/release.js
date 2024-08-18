@@ -1,4 +1,4 @@
-const { execSync } = require('child_process');
+import { execSync } from 'child_process';
 
 function checkGitStatus() {
   // Check if we're on the main branch
@@ -27,6 +27,7 @@ function release(isReleaseCandidate) {
 
   try {
     execSync(releaseCommand, { stdio: 'inherit' });
+    console.log('Release created successfully. To publish, run: npm run publish');
   } catch (error) {
     console.error('Release process failed:', error.message);
     process.exit(1);
