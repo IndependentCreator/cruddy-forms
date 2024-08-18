@@ -36,7 +36,8 @@
         "release": "node scripts/release.js",
         "release:rc": "node scripts/release.js --rc",
 		"should-semantic-release": "should-semantic-release --verbose",
-		"test": "vitest",
+		"test": "vitest run",
+		"test:watch": "vitest",
 		"tsc": "tsc"
 	},
 	"lint-staged": {
