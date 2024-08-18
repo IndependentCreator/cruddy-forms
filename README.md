@@ -24,6 +24,29 @@ Or using yarn:
 yarn add cruddy-forms
 ```
 
+Or using pnpm:
+
+```bash
+pnpm add cruddy-forms
+```
+
+## Adding CruddyForms to Your Site
+
+1. **Add CruddyForms to your project**<br>
+   Install the CruddyForms package into your project, using pnpm, yarn, or npm.
+
+2. **Define the schema for your form using TypeBox**<br>
+   In your typescript server code, use the TypeBox module to set the constraints you want to enforce for each field in your form, such as minLength or maxLength. Use regular expressions for more complex constraints.
+
+3. **Use CruddyForms to create the HTML for your form**<br>
+   In your typescript server code, use the CruddyForms module to convert your TypeBox schema into an HTML form with built-in client-side validation. Serve the form to clients, along with the <a href="https://normform.btxx.org">Normform CSS</a> file.
+
+4. **Use CruddyForms for server-side validation**<br>
+   In your typescript server code, use the CruddyForms module to validate form submissions, in case a user bypasses client-side validation.
+
+5. **Add custom server-side validation (Optional)**<br>
+   If you need additional server-side validation, e.g. making sure a username is unique, create a REST endpoint and tell CruddyForms about it. CruddyForms will add the endpoint data to the HTML form it generates, for use by cruddy-client.js. Serve cruddy-client.js along with the generated form, so that it will call your endpoint and display relevant error messages.
+
 ## Basic Usage
 
 Here's a simple example of how to use Cruddy Forms:

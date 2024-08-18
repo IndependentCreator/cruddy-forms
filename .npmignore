@@ -1,0 +1,27 @@
+# Source
+src/
+
+# Tests
+__tests__/
+*.test.js
+*.spec.js
+
+# Build tools
+.travis.yml
+.jenkins.yml
+.codeclimate.yml
+
+# Linters
+.eslintrc
+.eslintignore
+.prettierrc
+.prettierignore
+
+# Other
+.gitignore
+.npmrc
+.npmignore
+*.log
+*.md
+!README.md
+!LICENSE.md
