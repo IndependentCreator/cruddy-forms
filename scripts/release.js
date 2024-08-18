@@ -50,18 +50,23 @@ function release(isReleaseCandidate) {
   
   // If everything is okay, proceed with the release
   const releaseCommand = isReleaseCandidate 
-    ? 'release-it --preRelease=rc --no-git.changelog --no-github.release'
-    : 'release-it --no-git.changelog --no-github.release';
+    ? 'release-it --preRelease=rc --no-git.changelog --no-github.release --ci'
+    : 'release-it --no-git.changelog --no-github.release --ci';
 
   try {
     console.log(`Executing command: ${releaseCommand}`);
     const output = execSync(releaseCommand, { stdio: 'pipe' }).toString();
     console.log('Release-it output:', output);
 
-    // Extract the version number from the release-it output
-    const versionMatch = output.match(/to\s+v?(\d+\.\d+\.\d+(?:-rc\.\d+)?)/i);
-    if (versionMatch && versionMatch[1]) {
-      const version = versionMatch[1];
+    // Try to extract the version number from different possible outputs
+    const versionMatches = [
+      ...output.matchAll(/to v?(\d+\.\d+\.\d+(?:-rc\.\d+)?)/gi),
+      ...output.matchAll(/release .*?(\d+\.\d+\.\d+(?:-rc\.\d+)?)/gi),
+      ...output.matchAll(/^v?(\d+\.\d+\.\d+(?:-rc\.\d+)?)/gim)
+    ];
+
+    if (versionMatches.length > 0) {
+      const version = versionMatches[0][1];
       console.log(`Extracted version: ${version}`);
       
       // Add a tag for the release
@@ -73,15 +78,14 @@ function release(isReleaseCandidate) {
       throw new Error('Could not determine version number from release output. Unable to create tag.');
     }
 
-    console.log('Release process completed successfully. To publish, run: npm run publish');
+    console.log('Release process completed successfully.');
   } catch (error) {
     console.error('Release process failed:', error.message);
+    if (error.stdout) {
+      console.error('Command output:', error.stdout.toString());
+    }
     if (error.stderr) {
       console.error('Error output:', error.stderr.toString());
-    }
-    if (error.message.includes('No upstream configured for current branch')) {
-      console.error('Please set an upstream branch for your current branch.');
-      console.error('You can do this by running: git push -u origin main');
     }
     process.exit(1);
   }
