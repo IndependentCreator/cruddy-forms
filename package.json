@@ -1,6 +1,6 @@
 {
 	"name": "cruddy-forms",
-	"version": "0.1.0-rc.0",
+	"version": "0.1.0",
 	"description": "HTML Form generator with typebox validation",
 	"repository": {
 		"type": "git",
@@ -32,9 +32,9 @@
 		"lint:packages": "pnpm dedupe --check",
 		"lint:spelling": "cspell \"**\" \".github/**/*\"",
 		"pack": "pnpm pack --pack-destination ~",
-        "publish": "node scripts/publish.js",
-        "release": "node scripts/release.js",
-        "release:rc": "node scripts/release.js --rc",
+		"publish": "node scripts/publish.js",
+		"release": "node scripts/release.js",
+		"release:rc": "node scripts/release.js --rc",
 		"should-semantic-release": "should-semantic-release --verbose",
 		"test": "vitest run",
 		"test:watch": "vitest",
