@@ -16,17 +16,31 @@ function checkGitStatus() {
     process.exit(1);
   }
 
+  // Check if remote 'origin' exists
+  try {
+    execSync('git remote get-url origin');
+  } catch (error) {
+    console.error('Remote "origin" is not configured. Please set up the remote repository first.');
+    console.error('You can do this by running: git remote add origin <repository-url>');
+    process.exit(1);
+  }
+
   // Check if local main is ahead of remote main
   try {
     execSync('git fetch origin main');
     const localCommit = execSync('git rev-parse HEAD').toString().trim();
     const remoteCommit = execSync('git rev-parse origin/main').toString().trim();
     if (localCommit !== remoteCommit) {
-      console.error('Local main branch is ahead of remote. Please push your changes before releasing.');
+      console.error('Local main branch is not in sync with remote. Please pull or push your changes before releasing.');
       process.exit(1);
     }
   } catch (error) {
-    console.error('Failed to check if local main is ahead of remote:', error.message);
+    if (error.message.includes('couldn\'t find remote ref main')) {
+      console.error('The remote branch "main" does not exist. Please push your local main branch to the remote repository.');
+      console.error('You can do this by running: git push -u origin main');
+    } else {
+      console.error('Failed to check if local main is in sync with remote:', error.message);
+    }
     process.exit(1);
   }
 }
@@ -57,6 +71,10 @@ function release(isReleaseCandidate) {
     console.log('Release created successfully. To publish, run: npm run publish');
   } catch (error) {
     console.error('Release process failed:', error.message);
+    if (error.message.includes('No upstream configured for current branch')) {
+      console.error('Please set an upstream branch for your current branch.');
+      console.error('You can do this by running: git push -u origin main');
+    }
     process.exit(1);
   }
 }
