@@ -32,11 +32,12 @@
 		"lint:packages": "pnpm dedupe --check",
 		"lint:spelling": "cspell \"**\" \".github/**/*\"",
 		"pack": "pnpm pack --pack-destination ~",
+        "publish": "node scripts/publish.js",
+        "release": "node scripts/release.js",
+        "release:rc": "node scripts/release.js --rc",
 		"should-semantic-release": "should-semantic-release --verbose",
 		"test": "vitest",
-		"tsc": "tsc",
-        "release": "node scripts/release.js",
-        "release:rc": "node scripts/release.js --rc"
+		"tsc": "tsc"
 	},
 	"lint-staged": {
 		"*.{ts,cjs}": "eslint"
