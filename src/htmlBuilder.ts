@@ -192,20 +192,31 @@ ${ errorDetails.length > 0 ? errorDetailsList : "" }
     getElementDataFromSchema( lang?: string ): ElementData[] {
         const elementData = new Array<ElementData>();
         let schemaType: "localized" | "non-localized" | null = null;
+        const localizableFields: string[] = [];
 
         const processValue = ( value: unknown, key: string ): string => {
             const isLocalized = this.isLocalizedString( value );
         
             if ( schemaType === null ) {
                 schemaType = isLocalized ? "localized" : "non-localized";
-            } else if ( ( schemaType === "localized" && !isLocalized ) || 
-                   ( schemaType === "non-localized" && isLocalized ) ) {
-                throw new Error( "Mixed localized and non-localized values are not allowed" );
+                if ( isLocalized ) {
+                    localizableFields.push( key );
+                }
+            } else if ( schemaType === "localized" && !isLocalized ) {
+                throw new Error( `Mixed localized and non-localized values are not allowed. 
+                Expected '${ key }' to be localized. 
+                Localizable fields are: ${ localizableFields.join( ", " ) }` );
+            } else if ( schemaType === "non-localized" && isLocalized ) {
+                throw new Error( `Mixed localized and non-localized values are not allowed. 
+                Unexpected localization for '${ key }'. 
+                No fields were expected to be localized.` );
             }
 
             if ( isLocalized ) {
+                localizableFields.push( key );
                 if ( !lang ) {
-                    throw new Error( `Language must be specified for internationalized schema (${ key })` );
+                    throw new Error( `Language must be specified for internationalized schema. 
+                    Localizable fields are: ${ localizableFields.join( ", " ) }` );
                 }
 
                 return this.getLocalizedValue( value as Record<string, string>, lang );
@@ -237,14 +248,16 @@ ${ errorDetails.length > 0 ? errorDetailsList : "" }
                     element = String( value );
                     break;
                 case "hint":
-                    hint = processValue( value, key );
+                    hint = processValue( value, `${ name }.${ key }` );
                     break;
                 case "label":
-                    label = processValue( value, key );
+                    label = processValue( value, `${ name }.${ key }` );
                     break;
                 case "placeholder":
+                    stringAttributes.set( key, processValue( value, `${ name }.${ key }` ) );
+                    break;
                 case "endpoint":
-                    stringAttributes.set( key === "endpoint" ? "data-endpoint" : key, processValue( value, key ) );
+                    stringAttributes.set( "data-endpoint", processValue( value, `${ name }.${ key }` ) );
                     break;
                 case "elementValue":
                     elementValue = String( value );
