@@ -19,7 +19,7 @@ function publish() {
 
     // Publish to npm
     console.log('Publishing to npm...');
-    execSync('npm publish', { stdio: 'inherit' });
+    execSync('npm publish --access public', { stdio: 'inherit' });
     console.log('Successfully published to npm!');
   } catch (error) {
     console.error('Publish process failed:', error.message);
