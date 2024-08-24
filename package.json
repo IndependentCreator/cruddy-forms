@@ -1,6 +1,6 @@
 {
 	"name": "cruddy-forms",
-	"version": "0.1.4-rc.0",
+	"version": "0.1.4",
 	"description": "HTML Form generator with typebox validation",
 	"repository": {
 		"type": "git",
