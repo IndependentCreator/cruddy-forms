@@ -1,7 +1,8 @@
 {
 	"name": "cruddy-forms",
 	"version": "0.1.4",
-	"description": "HTML Form generator with typebox validation",
+	"description": "HTML form generator using typebox and normform",
+	"homepage": "https://cruddyforms.com",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/IndependentCreator/cruddy-forms"
