@@ -1,6 +1,6 @@
 {
 	"name": "cruddy-forms",
-	"version": "0.1.4",
+	"version": "0.1.5",
 	"description": "HTML form generator using typebox and normform",
 	"homepage": "https://cruddyforms.com",
 	"repository": {
