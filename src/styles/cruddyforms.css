@@ -1,0 +1,44 @@
+pre {
+    padding: 1ch;
+}
+
+form.normform input:invalid:focus:not(:placeholder-shown) ~ button {
+    padding: 0 0 32px 0px;
+}
+
+.password {
+    position: relative;
+  }
+
+.password button {
+  cursor: pointer;
+  position: absolute;
+  height: 107%;
+  display: flex; 
+  justify-content: center;
+  align-items: center;
+  top: 0;
+  right: 10%;
+  background-color: transparent;
+  border: none;
+  color: #777;
+  display: none;
+}
+
+.button-password-hide,
+.button-password-show {
+    position: relative;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.button-password-hide::before,
+.button-password-show::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    bottom: -10px;
+    left: -10px;
+}
