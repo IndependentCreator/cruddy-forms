@@ -1,5 +1,7 @@
 
 
+## [0.1.6](https://github.com/IndependentCreator/cruddy-forms/compare/v0.1.5...v0.1.6) (2024-09-01)
+
 ## [0.1.5](https://github.com/IndependentCreator/cruddy-forms/compare/v0.1.4...v0.1.5) (2024-09-01)
 
 ## [0.1.4](https://github.com/IndependentCreator/cruddy-forms/compare/v0.1.4-rc.0...v0.1.4) (2024-08-24)
